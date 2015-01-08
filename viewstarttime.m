@@ -3,6 +3,8 @@ if nargin<3
     tlength=1951;
 end
 
+useSubplots=1;
+
 [head, eye, gaze]=headeyegazeMatrix(g,s,tlength);
 x=findstarttime(head,eye);
 o=x.left;
@@ -29,59 +31,89 @@ box.stim=[stim_start ymin stim_dur boxheight];
 
 
 figure;hold on
+if useSubplots
+    subplot(2,2,1)
+    hold on
+end
 rectangle('position',box.gap,'facecolor',[.9 .9 .9]);
 rectangle('position',box.stim,'facecolor',[.8 .8 .8]);
 plot(head.hastim(:,~rightward),'k');
 y=ylim;
+y(y>1e4)=1e4;
+y(y<-1e4)=-1e4;
 plot(o.prestimhead(1:tlength),'r');
 plot(o.poststimhead(1:tlength),'m');
 plot(mean(head.hastim(:,~rightward),2),'b','linewidth',2)
 line([o.headstart o.headstart],[y(1),y(2)])
-line([o.hmax o.hmax],[y(1),y(2)])
+% line([o.hmax o.hmax],[y(1),y(2)])
 ylim(y);
-title('Leftward Head Start Times');
+xlim([500 800])
+title(['Leftward Head Start Time: ' num2str(o.headstart)]);
 
-figure;hold on
+if useSubplots
+    subplot(2,2,2)
+    hold on
+else
+    figure;hold on
+end
 rectangle('position',box.gap,'facecolor',[.9 .9 .9]);
 rectangle('position',box.stim,'facecolor',[.8 .8 .8]);
 plot(eye.eastim(:,~rightward),'k')
 y=ylim;
+y(y>1e4)=1e4;
+y(y<-1e4)=-1e4;
 plot(o.prestimeye(1:tlength),'r')
 plot(o.poststimeye(1:tlength),'m');
 plot(mean(eye.eastim(:,~rightward),2),'b','linewidth',2)
-title('Leftward Eye Start Times')
+title(['Leftward Eye Start Time: ' num2str(o.eyestart)])
 line([o.eyestart o.eyestart],[y(1),y(2)]) 
-line([o.emax o.emax],[y(1),y(2)])
+% line([o.emax o.emax],[y(1),y(2)])
 ylim(y);
+xlim([500 800])
 
 o=x.right;
 
-figure;hold on
+if useSubplots
+    subplot(2,2,3)
+    hold on
+else
+    figure;hold on
+end
 rectangle('position',box.gap,'facecolor',[.9 .9 .9]);
 rectangle('position',box.stim,'facecolor',[.8 .8 .8]);
 plot(head.hastim(:,rightward),'k');
 y=ylim;
+y(y>1e4)=1e4;
+y(y<-1e4)=-1e4;
 plot(o.prestimhead(1:tlength),'r');
 plot(o.poststimhead(1:tlength),'m');
-title('Rightward Head Start Times');
+title(['Rightward Head Start Time: ',num2str(o.headstart)]);
 plot(mean(head.hastim(:,rightward),2),'b','linewidth',2)
 line([o.headstart o.headstart],[y(1),y(2)]) 
-line([o.hmax o.hmax],[y(1),y(2)])
+% line([o.hmax o.hmax],[y(1),y(2)])
 ylim(y);
+xlim([500 800])
 
-figure;hold on
+if useSubplots
+    subplot(2,2,4)
+    hold on
+else
+    figure;hold on
+end
 rectangle('position',box.gap,'facecolor',[.9 .9 .9]);
 rectangle('position',box.stim,'facecolor',[.8 .8 .8]);
 plot(eye.eastim(:,rightward),'k')
 y=ylim;
+y(y>1e4)=1e4;
+y(y<-1e4)=-1e4;
 plot(o.prestimeye(1:tlength),'r')
 plot(o.poststimeye(1:tlength),'m');
-title('Rightward Eye Start Times')
+title(['Rightward Eye Start Time: ',num2str(o.eyestart)])
 plot(mean(eye.eastim(:,rightward),2),'b','linewidth',2)
 line([o.eyestart o.eyestart],[y(1),y(2)]) 
-line([o.emax o.emax],[y(1),y(2)])
+% line([o.emax o.emax],[y(1),y(2)])
 ylim(y);
-
+xlim([500 800])
 if nargout>0
     output=x;
 end

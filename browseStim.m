@@ -5,10 +5,16 @@
 %trials).
 
 %The function generates plots for exploratory analysis and publication
-function stimramp(s,g)
+function browseStim
+[filename, filepath]=uigetfile({'~/data/*.mat'},'Select File to Analyze',...
+    'multiselect','off');
+if filename==0
+    return
+end
+b=load([filepath filename]);
 
-s=recalculatevels(s);
-g=recalculatevels(g);
+s=recalculatevels(b.s);
+g=recalculatevels(b.g);
 
 %stimulation and gap periods
 gap_start=500;
@@ -36,8 +42,8 @@ f=figure;
 whichplots=ones(3);
 %all
 b1=uicontrol(f,'string','Plot All','units','normalized',...
-    'position',[0.5 0.4 0.1 0.1],...
-    'callback',{@plotMeanHEG,d,ones(9,1)});
+    'position',[0.2 0.2 0.1 0.1],...
+    'callback',{@plotAll,d,f.Number});
 %head
 hp=uicontrol(f,'string','Plot HP','units','normalized',...
     'position',[0.1 0.3 0.1 0.1],...
@@ -70,32 +76,94 @@ ga=uicontrol(f,'string','Plot GA','units','normalized',...
     'callback',{@plotMeanHEG, d,[0 0 0 0 0 0 0 0 1]});
 
 date=s.trialnum{1}(3:9);
-day=date(1:2)
-month=date(3:5)
-year=date(6:7)
-date=[month,'-',day,'-20',year]
+day=date(1:2);
+month=date(3:5);
+year=date(6:7);
+date=[month,'-',day,'-20',year];
 
-t=uicontrol('style','text','string',['STIM DATE: ',date],'fontsize',18)
+t=uicontrol('style','text','string',['STIM DATE: ',date],'fontsize',18);
 t.Units='normalized';
-t.Position=[0.1 0.75 0.75 0.1]
+t.Position=[0.1 0.75 0.75 0.1];
+
+lat=uicontrol(f,'string','Show Latency','units','normalized',...
+    'position',[0.5 0.4 0.2 0.1],...
+    'callback',{@latencyCB,g,s});
+end
+
+function plotAll(~,~,d,~)
+
+head=d.head;
+gaze=d.gaze;
+eye=d.eye;
+box=d.box;
+
+rightwardS=gaze.gpstim(1600,:)>0;
+rightwardG=gaze.gpgap(1600,:)>0;
+
+whichplots=[1 1 1 1 1 1 1 1 1];
+figure
+if whichplots(1)
+plotstimSUB(mean(head.hpgap(:,rightwardG)'),mean(head.hpstim(:,rightwardS)'),box,'Head Position','Position (degrees)',1,1);
+plotstimSUB(mean(head.hpgap(:,~rightwardG)'),mean(head.hpstim(:,~rightwardS)'),box,'Head Position','Position (degrees)',0,1);
+legend(gca,'location','northeast')
+plotribbonMulti(head.hpgap,head.hpstim,rightwardG,rightwardS);
+
+end
+if whichplots(2)
+plotstimSUB(mean(eye.epgap(:,rightwardG)'),mean(eye.epstim(:,rightwardS)'),box,'Eye Position','Position (degrees)',1,2);
+plotstimSUB(mean(eye.epgap(:,~rightwardG)'),mean(eye.epstim(:,~rightwardS)'),box,'Eye Position','Position (degrees)',0,2);
+plotribbonMulti(eye.epgap,eye.epstim,rightwardG,rightwardS);
+end
+if whichplots(3)
+plotstimSUB(mean(gaze.gpgap(:,rightwardG)'),mean(gaze.gpstim(:,rightwardS)'),box,'Gaze Position','Position (degrees)',1,3);
+plotstimSUB(mean(gaze.gpgap(:,~rightwardG)'),mean(gaze.gpstim(:,~rightwardS)'),box,'Gaze Position','Position (degrees)',0,3);
+plotribbonMulti(gaze.gpgap,gaze.gpstim,rightwardG,rightwardS);
+end
+%velocity figures
+if whichplots(4)
+plotstimSUB(mean(head.hvgap(:,rightwardG)'),mean(head.hvstim(:,rightwardS)'),box,'Head Velocity','Velocity (degrees/s)',1,4);
+plotstimSUB(mean(head.hvgap(:,~rightwardG)'),mean(head.hvstim(:,~rightwardS)'),box,'Head Velocity','Velocity (degrees/s)',0,4);
+
+plotribbonMulti(head.hvgap,head.hvstim,rightwardG,rightwardS);
+end
+if whichplots(5)
+plotstimSUB(mean(eye.evgap(:,rightwardG)'),mean(eye.evstim(:,rightwardS)'),box,'Eye Velocity','Velocity (degrees/s)',1,5);
+plotstimSUB(mean(eye.evgap(:,~rightwardG)'),mean(eye.evstim(:,~rightwardS)'),box,'Eye Velocity','Velocity (degrees/s)',0,5);
+
+plotribbonMulti(eye.evgap,eye.evstim,rightwardG,rightwardS);
+end
+if whichplots(6)
+plotstimSUB(mean(gaze.gvgap(:,rightwardG)'),mean(gaze.gvstim(:,rightwardS)'),box,'Gaze Velocity','Velocity (degrees/s)',1,6);
+plotstimSUB(mean(gaze.gvgap(:,~rightwardG)'),mean(gaze.gvstim(:,~rightwardS)'),box,'Gaze Velocity','Velocity (degrees/s)',0,6);
+
+plotribbonMulti(gaze.gvgap,gaze.gvstim,rightwardG,rightwardS);
+end
+%acceleration figures
+if whichplots(7)
+plotstimSUB(mean(head.hagap(:,rightwardG)'),mean(head.hastim(:,rightwardS)'),box,'Head Acceleration','Acceleration (degrees/s/s)',1,7);
+plotstimSUB(mean(head.hagap(:,~rightwardG)'),mean(head.hastim(:,~rightwardS)'),box,'Head Acceleration','Acceleration (degrees/s/s)',0,7);
+
+plotribbonMulti(head.hagap,head.hastim,rightwardG,rightwardS);
+end
+if whichplots(8)
+plotstimSUB(mean(eye.eagap(:,rightwardG)'),mean(eye.eastim(:,rightwardS)'),box,'Eye Acceleration','Acceleration (degrees/s/s)',1,8);
+plotstimSUB(mean(eye.eagap(:,~rightwardG)'),mean(eye.eastim(:,~rightwardS)'),box,'Eye Acceleration','Acceleration (degrees/s/s)',0,8);
+
+plotribbonMulti(eye.eagap,eye.eastim,rightwardG,rightwardS);
+end
+if whichplots(9)
+plotstimSUB(mean(gaze.gagap(:,rightwardG)'),mean(gaze.gastim(:,rightwardS)'),box,'Gaze Acceleration','Acceleration (degrees/s/s)',1,9);
+plotstimSUB(mean(gaze.gagap(:,~rightwardG)'),mean(gaze.gastim(:,~rightwardS)'),box,'Gaze Acceleration','Acceleration (degrees/s/s)',0,9);
+
+plotribbonMulti(gaze.gagap,gaze.gastim,rightwardG,rightwardS);
 end
 
 
+end
 
-
-
-% % plotHeadEyeGaze(head,eye,gaze,box);
-% plotMeanHEG(head,eye,gaze,box);
-% 
-% %how whichplots works: [hp ep gp;hv ev gv; ha ea ga]
-% %plot all head = whichplots(1,:)=1;
-% %plot all velocities= whichplots(:,2)=1;
-% whichplots=zeros(3);
-% whichplots(1,:)=1;
-% 
-% % plotMeanHEG(head,eye,gaze,box,whichplots);
-
-
+function latencyCB(~,~,g,s)
+    viewstarttime(g,s)
+end
 
 function plotribbon(m,fstr,a)
 if nargin<2
@@ -120,6 +188,7 @@ plotribbon(g(:,~rg),'b',0.2);
 plotribbon(s(:,~rs),'m',0.2);
 
 end
+
 function plotMeanHEG(~,~,d,whichplots)
 head=d.head;
 gaze=d.gaze;
@@ -214,13 +283,46 @@ plotstim(gaze.gagap,gaze.gastim,box,'Gaze Acceleration','Acceleration (degrees/s
 
 end
 
-
 function plotstim(agap,bstim,box,titletext,ytitle,newplot)
     if nargin<6
         newplot=1;
     end
     if newplot
         figure;hold on
+        colors = {'k','r'};
+        d={'Rightward Gap','Rightward Stim'};
+        rectangle('position',box.gap,...
+            'facecolor',[.9 .9 .9]);
+        rectangle('position',box.stim,...
+            'facecolor',[.8 .8 .8]);
+        y=[0 1];
+    else
+        colors = {'b','m'};
+        y=ylim;
+        d={'Leftward Gap','Leftward Stim'};
+    end
+    
+    if size(agap,1)==1
+        lw=2;
+    else
+        lw=1;
+    end
+
+    plot(agap,colors{1},'displayname',d{1},'linewidth',lw)
+    plot(bstim,colors{2},'displayname',d{2},'linewidth',lw)
+    title(titletext)
+    xlabel('Time (ms)')
+    ylabel(ytitle);
+    ylim([min(min(bstim(:)),y(1)),max(max(bstim(:)),y(2))])
+end
+
+function plotstimSUB(agap,bstim,box,titletext,ytitle,newplot,subnum)
+    if nargin<6
+        newplot=1;
+    end
+    if newplot
+        subplot(3,3,subnum)
+        hold on
         colors = {'k','r'};
         d={'Rightward Gap','Rightward Stim'};
         rectangle('position',box.gap,...
