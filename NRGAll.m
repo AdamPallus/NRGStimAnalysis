@@ -2,10 +2,17 @@
 
 function [dtstatic, dtpursuit]= NRGAll
 
+[filenames filepath]=uigetfile({'*.mat'},'Select Files to Analyze',...
+    'multiselect','on');
 
-filepath='C:\Users\adam2\Documents\MATLAB\NRG Stim Analysis\data';
-x=dir(filepath);
-x=x(~[x.isdir]);
+if ~iscell(filenames)
+    filenames=filenames{1};
+end
+
+if filenames{1}==0
+    return
+end
+x=filenames;
 
 
     vnamesPursuit={'Loc','n','HL','HR','EL','ER'};
@@ -16,7 +23,7 @@ x=x(~[x.isdir]);
     
     
 for f =1:length(x)
-    filename=x(f).name;
+    filename=x{f};
     try
         if ~strcmp(filename(end-3:end),'.mat')
             continue %don't try to load anything that isnt a mat
