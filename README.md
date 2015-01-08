@@ -1,0 +1,2 @@
+## NRG Stimulation Experiment Analysis
+THis repository contains the matlab code used to analyze and generate the figures associated with the nucleus reticularis gigantocellularis (NRG) stimulation experiment performed by Adam Pallus in the laboratory of Ed Freedman at the University of Rochester. The manuscript is in preparation.
