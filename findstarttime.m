@@ -1,15 +1,31 @@
 function o=findstarttime(head,eye)
 
 if isfield(head,'hpstim')
-rightward=head.hpstim(1800,:)>0;
-
-o.right= substart(head,eye,550,200,rightward);
-o.left=substart(head,eye,550,200,~rightward);
+    
+    %Remove trials with saccadlike activity right around stim time
+    bad=any(eye.eastim(520:580,:)>4000);
+    if any(bad)
+        
+        display(['Removing ', num2str(sum(bad)),' trials'])
+        
+        eye.eastim=eye.eastim(:,~bad);
+        eye.evstim=eye.evstim(:,~bad);
+        eye.epstim=eye.epstim(:,~bad);
+        
+        head.hastim=head.hastim(:,~bad);
+        head.hvstim=head.hvstim(:,~bad);
+        head.hpstim=head.hpstim(:,~bad);
+    end
+%     
+    rightward=head.hpstim(1800,:)>0;
+    o.right= substart(head,eye,550,100,rightward,0);
+    o.left=substart(head,eye,550,100,~rightward,0);
 else
-    o=substart(head,eye,50,49);
+    index=head.hastim(100,:)<1e100;
+    o=substart(head,eye,50,49,index,1);
 end
 
-function o=substart(head,eye,stimstart,searchwindow,index)
+function o=substart(head,eye,stimstart,searchwindow,index,static)
 
 if nargin<5
     index=head.hastim(100,:)<1e100;
@@ -38,18 +54,45 @@ emax=indstimstartE(1)+stimstart;
 hmax=indstimstartH(1)+stimstart;
 
 %regress on the "searchwindow" ms period before stimstart
-o.prestimeye=regressfit(eye.eastim(:,index),presearch,stimstart);
-o.prestimhead=regressfit(head.hastim(:,index),presearch,stimstart);
+[~, o.prestimeye]=regressfit(eye.eastim(:,index),presearch,stimstart);
+[~, o.prestimhead]=regressfit(head.hastim(:,index),presearch,stimstart);
 
-o.poststimeye=regressfit(eye.eastim(:,index),emax-25,emax);
-o.poststimhead=regressfit(head.hastim(:,index),hmax-25,hmax);
-%%%%DEBUG
-% o.poststimeye=regressfit(eye.eastim(:,index),75,100);
-% o.poststimhead=regressfit(head.hastim(:,index),75,100);
+if ~static
+    [poststimeyeFAM,o.poststimeye]=regressfit(eye.eastim(:,index),emax-25,emax);
+    [poststimheadFAM,o.poststimhead]=regressfit(head.hastim(:,index),hmax-25,hmax);
+else
+    %do it a tiny bit differently for static stimulation
+    [poststimeyeFAM, o.poststimeye]=regressfit(eye.eastim(:,:),emax-15,emax+10);
+    [poststimheadFAM, o.poststimhead]=regressfit(head.hastim(:,:),hmax-15,hmax+10);
+end
+
 
 triallength=size(head.hastim,1);
-[m, o.eyestart]=min(abs(o.prestimeye(1:triallength)-o.poststimeye(1:triallength)));
-[m, o.headstart]=min(abs(o.prestimhead(1:triallength)-o.poststimhead(1:triallength)));
+
+%this part is a little bit clunky, but we have a family of functions and we
+%are generating the values using a for loop, then comparing each function
+%individually. Each function represents the regression from one trial, we
+%report the average of all of the trials as the mean latency.
+
+for i =1:triallength
+    pse(:,i)=poststimeyeFAM(i);
+    psh(:,i)=poststimheadFAM(i);
+end
+
+for i =1:size(pse,1)
+    [m, es(i)]=min(abs(o.prestimeye(1:triallength)-pse(i,:)));
+    [m, hs(i)]=min(abs(o.prestimhead(1:triallength)-psh(i,:)));
+end
+    [m, meanes]=min(abs(o.prestimeye(1:triallength)-o.poststimeye(1:triallength)));
+    [m, meanhs]=min(abs(o.prestimhead(1:triallength)-o.poststimhead(1:triallength)));
+
+
+o.eyestart=meanes;
+o.eyestartSTD=std(es);
+o.headstart=meanhs;
+o.headstartSTD=std(hs);
+
+
 o.difference=o.eyestart-o.headstart;
 o.emax=emax;
 o.hmax=hmax;

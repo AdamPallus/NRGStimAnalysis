@@ -14,7 +14,7 @@
 
 function [dtstatic, dtpursuit]= NRGAll
 
-[filenames, filepath]=uigetfile({'*.mat'},'Select Files to Analyze',...
+[filenames, filepath]=uigetfile({'data\*.mat'},'Select Files to Analyze',...
     'multiselect','on');
 
 %if there is only one file selected, it will be a character array. Convert
@@ -28,8 +28,8 @@ if filenames{1}==0
     return
 end
 %set up the variable names for the tables, and initialize the tables
-vnamesPursuit={'Loc','n','HL','HR','EL','ER'};
-vnamesStatic={'Loc','n','H','E'};
+vnamesPursuit={'Loc','n','HL','HR','EL','ER','HLstd','HRstd','ELstd','ERstd'};
+vnamesStatic={'Loc','n','H','E','Hstd','Estd'};
 dtpursuit=table;
 dtstatic=table;
 
@@ -49,9 +49,12 @@ for f =1:length(filenames)
     %this function is the one that actually performs the analysis
     o=findstarttime(head,eye);
     %set up data row
-    pursuit={filename(1:end-4),size(head.hpstim,2),...
-        o.left.headstart-stimstart,o.right.headstart-stimstart,...
-        o.left.eyestart-stimstart,o.right.eyestart-stimstart};
+    p=[o.left.headstart,o.right.headstart,o.left.eyestart,o.right.eyestart];
+    p=p-stimstart;
+    p=[p o.left.headstartSTD,o.right.headstartSTD,o.left.eyestartSTD,o.right.eyestartSTD];
+    n=size(head.hpstim,2);
+    
+    pursuit=[{filename(1:end-4)},{n},num2cell(p)];
     %add to table
     dtpursuit(f,:)=pursuit;
     
@@ -59,9 +62,9 @@ for f =1:length(filenames)
     tlength=300;
     stimstart=50;
     [head, eye]=headeyeStatic(gap,tlength);
-    o=findstarttimeStatic(head,eye);
+    o=findstarttime(head,eye);
     static={filename(1:end-4),size(head.hastim,2),o.headstart-stimstart,...
-        o.eyestart-stimstart};
+        o.eyestart-stimstart,o.headstartSTD,o.eyestartSTD};
     dtstatic(f,:)=static;
 end
 

@@ -48,8 +48,8 @@ line([o.headstart o.headstart],[y(1),y(2)])
 % line([o.hmax o.hmax],[y(1),y(2)])
 ylim(y);
 xlim([500 800])
-title(['Leftward Head Start Time: ' num2str(o.headstart)]);
-
+t=['Leftward Head Start Time: ',num2str(round(o.headstart)),'\pm',num2str(round(o.headstartSTD))];
+title(t);
 if useSubplots
     subplot(2,2,2)
     hold on
@@ -65,7 +65,8 @@ y(y<-1e4)=-1e4;
 plot(o.prestimeye(1:tlength),'r')
 plot(o.poststimeye(1:tlength),'m');
 plot(mean(eye.eastim(:,~rightward),2),'b','linewidth',2)
-title(['Leftward Eye Start Time: ' num2str(o.eyestart)])
+t=['Leftward Eye Start Time: ',num2str(round(o.eyestart)),'\pm',num2str(round(o.eyestartSTD))];
+title(t);
 line([o.eyestart o.eyestart],[y(1),y(2)]) 
 % line([o.emax o.emax],[y(1),y(2)])
 ylim(y);
@@ -87,7 +88,8 @@ y(y>1e4)=1e4;
 y(y<-1e4)=-1e4;
 plot(o.prestimhead(1:tlength),'r');
 plot(o.poststimhead(1:tlength),'m');
-title(['Rightward Head Start Time: ',num2str(o.headstart)]);
+t=['Rightward Head Start Time: ',num2str(round(o.headstart)),'\pm',num2str(round(o.headstartSTD))];
+title(t);
 plot(mean(head.hastim(:,rightward),2),'b','linewidth',2)
 line([o.headstart o.headstart],[y(1),y(2)]) 
 % line([o.hmax o.hmax],[y(1),y(2)])
@@ -108,7 +110,8 @@ y(y>1e4)=1e4;
 y(y<-1e4)=-1e4;
 plot(o.prestimeye(1:tlength),'r')
 plot(o.poststimeye(1:tlength),'m');
-title(['Rightward Eye Start Time: ',num2str(o.eyestart)])
+t=['Rightward Eye Start Time: ',num2str(round(o.eyestart)),'\pm',num2str(round(o.eyestartSTD))];
+title(t);
 plot(mean(eye.eastim(:,rightward),2),'b','linewidth',2)
 line([o.eyestart o.eyestart],[y(1),y(2)]) 
 % line([o.emax o.emax],[y(1),y(2)])

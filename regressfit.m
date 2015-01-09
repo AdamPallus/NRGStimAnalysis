@@ -10,7 +10,7 @@
 %%pre=regressfit(HASTIM,500,525);post=regressfit(HASTIM,600,625) then
 %%compare the two regressions. Find where pre=post
 
-function [r b]=regressfit(a,timestart,timestop)
+function [singler, meanr]=regressfit(a,timestart,timestop)
 a=a(timestart:timestop,:);
 s=size(a);
 x=repmat(timestart:timestop,[s(2),1]);
@@ -18,20 +18,14 @@ x=repmat(timestart:timestop,[s(2),1]);
 %can't seem to run robustfit on a multi-trial set, so we're averaging
 %manually
 warning('off','all')
+fit=zeros(s(2),2);
 for i =1:s(2)
-    b(i,:)=robustfit(x(i,:),a(:,i));
+    fit(i,:)=robustfit(x(i,:),a(:,i));    
 end
 warning('on','all')
-b=mean(b,1);
-%switch so it is consistent with polyfit because for some reason they are
-%opposite...
-r(1)=b(2);
-r(2)=b(1);
+b=mean(fit,1);
 
-% b=polyfit(x,a',1)
-
-if nargout>1
-    b=r;
-end
-r=@(y) y.*r(1)+r(2);
+%make functions and return
+meanr=@(y) y.*b(2)+b(1);
+singler=@(y) y*fit(:,2)+fit(:,1);
 

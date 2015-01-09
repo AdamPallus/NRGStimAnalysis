@@ -1,12 +1,11 @@
-%This function takes two data tables. table 's' contains the trials in
-%which microstimulation was applied to the region of NRG during pursuit of
-%a step-ramp target moving at 40 deg/s to the left or right. Table 'g'
-%contains identical trials except that no stmiultion occured (control
-%trials).
+%This function interacts with the data tables stored in dated .mat files
+%corresponding with the NRG microstimulation experiment carried out by Adam
+%Pallus working in the laboratory of Ed Freedman.
 
 %The function generates plots for exploratory analysis and publication
+
 function browseStim
-[filename, filepath]=uigetfile({'~/data/*.mat'},'Select File to Analyze',...
+[filename, filepath]=uigetfile({'data/*.mat'},'Select File to Analyze',...
     'multiselect','off');
 if filename==0
     return
@@ -15,6 +14,7 @@ b=load([filepath filename]);
 
 s=recalculatevels(b.s);
 g=recalculatevels(b.g);
+gap=recalculatevels(b.gap);
 
 %stimulation and gap periods
 gap_start=500;
@@ -88,6 +88,10 @@ t.Position=[0.1 0.75 0.75 0.1];
 lat=uicontrol(f,'string','Show Latency','units','normalized',...
     'position',[0.5 0.4 0.2 0.1],...
     'callback',{@latencyCB,g,s});
+
+latstat=uicontrol(f,'string','Show Static Latency','units','normalized',...
+    'position',[0.5 0.5 0.2 0.1],...
+    'callback',{@latencyStaticCB,gap});
 end
 
 function plotAll(~,~,d,~)
@@ -163,6 +167,10 @@ end
 
 function latencyCB(~,~,g,s)
     viewstarttime(g,s)
+end
+
+function latencyStaticCB(~,~,gap)
+    viewstarttimeStatic(gap)
 end
 
 function plotribbon(m,fstr,a)
