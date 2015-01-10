@@ -92,6 +92,14 @@ lat=uicontrol(f,'string','Show Latency','units','normalized',...
 latstat=uicontrol(f,'string','Show Static Latency','units','normalized',...
     'position',[0.5 0.5 0.2 0.1],...
     'callback',{@latencyStaticCB,gap});
+
+newsite=uicontrol(f,'string','Load New Location','units','normalized',...
+    'position',[0.5 0.2 0.2 0.1],...
+    'callback',@newsite);
+end
+
+function newsite(~,~)
+browseStim
 end
 
 function plotAll(~,~,d,~)
@@ -109,7 +117,7 @@ figure
 if whichplots(1)
 plotstimSUB(mean(head.hpgap(:,rightwardG)'),mean(head.hpstim(:,rightwardS)'),box,'Head Position','Position (degrees)',1,1);
 plotstimSUB(mean(head.hpgap(:,~rightwardG)'),mean(head.hpstim(:,~rightwardS)'),box,'Head Position','Position (degrees)',0,1);
-legend(gca,'location','northeast')
+legend(gca,'location','east')
 plotribbonMulti(head.hpgap,head.hpstim,rightwardG,rightwardS);
 
 end
@@ -161,7 +169,7 @@ plotstimSUB(mean(gaze.gagap(:,~rightwardG)'),mean(gaze.gastim(:,~rightwardS)'),b
 
 plotribbonMulti(gaze.gagap,gaze.gastim,rightwardG,rightwardS);
 end
-
+x=tightfig;
 
 end
 
