@@ -1,4 +1,7 @@
-function o=findstarttime(head,eye)
+%This is a rewrite of the findstatttime function. This function returns a
+%table where each row is the latency calculated for a single trial.
+
+function t=findstarttimeTABLE(head,eye)
 
 if isfield(head,'hpstim')
     
@@ -16,16 +19,23 @@ if isfield(head,'hpstim')
         head.hvstim=head.hvstim(:,~bad);
         head.hpstim=head.hpstim(:,~bad);
     end
-%     
+    
     rightward=head.hpstim(1800,:)>0;
-    o.right= substart(head,eye,550,100,rightward,0);
-    o.left=substart(head,eye,550,100,~rightward,0);
+    
+    tright= substart(head,eye,550,100,rightward,0);
+    tright.Dir=repmat('R',[height(tright),1]);
+    
+    tleft=substart(head,eye,550,100,~rightward,0);
+    tleft.Dir=repmat('L',[height(tleft),1]);
+    
+    t=vertcat(tleft,tright);
 else
     index=head.hastim(100,:)<1e100;
-    o=substart(head,eye,50,49,index,1);
+    t=substart(head,eye,50,49,index,1);
+    t.Dir=repmat('S',[height(t),1]);
 end
 
-function o=substart(head,eye,stimstart,searchwindow,index,static)
+function t=substart(head,eye,stimstart,searchwindow,index,static)
 
 if nargin<5
     index=head.hastim(100,:)<1e100;
@@ -85,20 +95,11 @@ for i =1:size(pse,1)
 end
     [m, meanes]=min(abs(o.prestimeye(1:triallength)-o.poststimeye(1:triallength)));
     [m, meanhs]=min(abs(o.prestimhead(1:triallength)-o.poststimhead(1:triallength)));
+%subtract stimstart to get latency estimate
+hs=hs'-stimstart;
+es=es'-stimstart;
+t=table(hs,es,'VariableNames',{'EyeStart','HeadStart'});
 
-
-o.eyestart=meanes;
-o.eyestartSTD=std(es);
-o.headstart=meanhs;
-o.headstartSTD=std(hs);
-
-%debug
-o.pse=pse;
-o.psh=psh;
-
-o.difference=o.eyestart-o.headstart;
-o.emax=emax;
-o.hmax=hmax;
 
 
 

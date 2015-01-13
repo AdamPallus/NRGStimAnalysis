@@ -1,0 +1,66 @@
+%This is a rewrite of the NRGAll function. This version of the function is
+%intended to return the results as a vertical table where each row is a
+%single trial. We can then use grpstats to evaluate metrics about each
+%stimulus location.
+
+%We will write this function to use the 2x standard deviation method to
+%determine latency. We will need to rewrite the regression-latency-function
+%to return the individual trial data to use in this analysis.
+
+%This function returns two tables: dtstatic, containing the latencies for
+%the trials in gap, and dtpursuit, containing the latencies for s. g is not
+%currently used in this analysis. Note that dtpursuit separates leftward
+%and rightward movements, while dtstatic contains only one column for head
+%and eye since no movement is occuring during stimulation.
+
+function d= NRGAllTABLE
+
+[filenames, filepath]=uigetfile({'data\*.mat'},'Select Files to Analyze',...
+    'multiselect','on');
+
+%if there is only one file selected, it will be a character array. Convert
+%this to a cell array so we don't have to keep checking.
+if ~iscell(filenames)
+    filenames=filenames{1};
+end
+%if the user did not select anything (hit cancel), just exit the function
+%with no further messaging.
+if filenames{1}==0
+    return
+end
+%set up the variable names for the tables, and initialize the tables
+
+dtpursuit=table;
+dtstatic=table;
+
+%Begin looping throgh the filenames, loading each one, performing the
+%analyses and adding to the tables.
+
+for f =1:length(filenames)
+    filename=filenames{f};
+    b=load([filepath, filename]);
+    s=b.s;
+    g=b.g;
+    gap=b.gap;
+    
+    tlength=1951; %Only look at trials that are this long (in ms)
+    stimstart=550; %time of stimulation onset 
+    [head, eye, ~]=headeyegazeMatrix(g,s,tlength); %convert cell2matrix
+    %this function is the one that actually performs the analysis
+    t=findstarttimestd(head,eye);
+    %set up data row
+    t.Loc=repmat(f,[height(t),1]);
+    
+    %add to table
+    dtpursuit=vertcat(dtpursuit,t);
+    
+    %repeat above for static trials
+    tlength=300;
+    stimstart=50;
+    [head, eye]=headeyeStatic(gap,tlength);
+    t=findstarttimestd(head,eye);
+    t.Loc=repmat(f,[height(t),1]);
+    dtstatic=vertcat(dtstatic,t);
+
+end
+d=vertcat(dtpursuit,dtstatic);

@@ -42,7 +42,10 @@ y=ylim;
 y(y>1e4)=1e4;
 y(y<-1e4)=-1e4;
 plot(o.prestimhead(1:tlength),'r');
-plot(o.poststimhead(1:tlength),'m');
+plot(o.poststimhead(1:tlength),'m','linewidth',2);
+%DEBUG
+plot(o.psh','m');
+
 plot(mean(head.hastim(:,~rightward),2),'b','linewidth',2)
 line([o.headstart o.headstart],[y(1),y(2)])
 % line([o.hmax o.hmax],[y(1),y(2)])
@@ -63,7 +66,9 @@ y=ylim;
 y(y>1e4)=1e4;
 y(y<-1e4)=-1e4;
 plot(o.prestimeye(1:tlength),'r')
-plot(o.poststimeye(1:tlength),'m');
+plot(o.poststimeye(1:tlength),'m','linewidth',2);
+%DEBUG
+plot(o.pse','m');
 plot(mean(eye.eastim(:,~rightward),2),'b','linewidth',2)
 t=['Leftward Eye Start Time: ',num2str(round(o.eyestart)),'\pm',num2str(round(o.eyestartSTD))];
 title(t);
@@ -87,7 +92,9 @@ y=ylim;
 y(y>1e4)=1e4;
 y(y<-1e4)=-1e4;
 plot(o.prestimhead(1:tlength),'r');
-plot(o.poststimhead(1:tlength),'m');
+plot(o.poststimhead(1:tlength),'m','linewidth',2);
+%DEBUG
+plot(o.psh','m');
 t=['Rightward Head Start Time: ',num2str(round(o.headstart)),'\pm',num2str(round(o.headstartSTD))];
 title(t);
 plot(mean(head.hastim(:,rightward),2),'b','linewidth',2)
@@ -109,7 +116,9 @@ y=ylim;
 y(y>1e4)=1e4;
 y(y<-1e4)=-1e4;
 plot(o.prestimeye(1:tlength),'r')
-plot(o.poststimeye(1:tlength),'m');
+plot(o.poststimeye(1:tlength),'m','linewidth',2);
+%DEBUG
+plot(o.pse','m');
 t=['Rightward Eye Start Time: ',num2str(round(o.eyestart)),'\pm',num2str(round(o.eyestartSTD))];
 title(t);
 plot(mean(eye.eastim(:,rightward),2),'b','linewidth',2)
