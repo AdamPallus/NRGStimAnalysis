@@ -1,0 +1,142 @@
+---
+title: "Analysis of NRG Stimulation during Pursuit"
+output: html_document
+---
+##Synopsis
+In this report, we look at the effect of stimulating the rostral portion of NRG during pursuit. We identified 11 regions that produce leftward, horizontal head rotation upon stimulation when the head is stationary, and assess the impact of stimulating this region during pursuit. 
+
+###Data Processing
+First, we uncompress the bz2 file and load the data from the csv file.
+```{r, cache=TRUE,message=FALSE}
+filename<-"~/MATLAB/NRGStimAnalysis/LatencyAndVelocityAllStacked.csv"
+d <- read.csv(filename, na.strings="NaN")
+head(d)
+```
+This data frame was generated in Matlab and contains latency and peak velocity data from 1026 stimulation trials at 11 locations. 
+
+##Stimulation During Fixation
+We stimulated each location using a fixation-gap-stim paradigm, in which subjects fixated on a visual target. 50ms after the visual target was extinguished, stimulation began. 
+
+First, we show the latency of the movement of the head and eyes:
+
+```{r,message=FALSE}
+dfix<-subset(d,d$Dir=='S')
+library(ggplot2)
+qplot(factor(Loc),Lat,data=dfix,facets=Type~.,geom='boxplot',ylab='Latency (ms)',xlab='Location')+coord_flip()
+
+
+```
+
+The latency of the two movements is similar, but there is considerably more variance in the eye movement latency.This is likely due to the increased variance in the acceleration of the eyes, which is used to determine the latency of the movements.
+
+Next, we show the peak velocity of the head and eyes.The head movements are to the left (negative), and the eye movements are to the right (positive).
+
+
+```{r}
+qplot(factor(Loc),Vel,data=dfix,facets=Type~.,geom='boxplot',ylab='Velocity (deg/s)',xlab='Location')+coord_flip()
+
+```
+
+It is clear that there is a lot of similarity between the evoked movements, which is consistent with our expectation of an in-tact VOR during (and 50ms after) fixation.
+
+Let's see how the compare on a trial-to-trial basis, taking the absolute value of the head velocity:
+
+```{r}
+ddfix<-data.frame(dfix$Vel[dfix$Type=='E'],dfix$Vel[dfix$Type=='H'])
+names(ddfix)<-c("Ev","Hv")
+qplot(abs(Hv),Ev,data=ddfix,xlab='abs(Head Velocity)',ylab='Eye Velocity')+stat_smooth(method='lm')
+m<-lm(Ev~abs(Hv),data=ddfix)
+m
+summary(m)$r.squared
+```
+
+There is a strong linear correlation (r-squared = 0.9896) between head velocity and eye velocity. The eye movements are usually slightly slower than the head movements, but note that the slope is slightly positive (1.078). This suggests that at higher peak head velocities, the eye velocity could exceed head velocity, but we have fewer data points at that level.
+###VOR Gain
+We can plot the compensatory gain (eye velocity divided by negative head velocity):
+```{r}
+qplot(Hv,Ev/-Hv,data=ddfix,xlab='Head Velocity',ylab='Compensatory Gain')+stat_smooth(method='lm')
+
+```
+
+###Conclusion from Fixation
+All of these resulsts are consistent with the hypothesis that the eye movements that we observe upon stimulation are a result of an active VOR. This is as expected, since the animals were actively fixating on a stationary visual target. It is also in agreement with previous studies that stimulated in NRG (Quessy and Freedman 2004). 
+
+A major difference is that these data show a compensatory gain of the VOR around 1, while other studies show VOR gains as low as 0.2 in this region.
+
+##Stimulation During Head-Free Pursuit
+Now we will compare these results to stimulation during active head-unrestrained gaze pursuit. Our hypothesis is that the eye movements produced will be the resultFirst we will look for changes in eye movement before the head begins to change its movement in response to stimulation. If we observe such changes in eye movement, we must reject the hypothesis that these movements are due to the VOR.
+
+```{r}
+dl<-subset(d,Dir=='L')
+dr<-subset(d,Dir=='R')
+dlr<-subset(d,Dir!='S')
+qplot(factor(Loc),Lat,data=dlr,facets=Type~Dir,geom='boxplot',ylab='Latency (ms)',xlab='Location')+coord_flip()
+
+```
+
+The latency looks similar to what we saw during stimulation after fixation. Again, we see more variance in the measurement of eye latency, but they are similar. There is no evidence of the eyes systematically moving sooer than the head. 
+
+Comparing stimulatio during leftward and rightward movements, the latency is slightly longer during rightward movements. This is likely due to the head moving in the opposite direction of the stimulation-induced movement, so it takes longer for the difference to be observable. 
+
+###Velocity
+In all of our stimulus locations, we were able to reverse the direction of head movement. In Freedman and Quessy (2004), they found that changes in head velocity during gaze shifts were often accompanied by changes in eye velocity several times greater. If we observe changes in eye velocity that are significantly greater than the changes in head velocity, we should reject the hypothesis that the eye movement changes are due to the VOR.
+
+Below we show the peak eye and head velocities evoked by stimulation during pursuit. The results are similar to stimulation after fixation. We see no evidence of a change in eye velocity that is greater than the change in head velocity.
+
+```{r}
+qplot(factor(Loc),Vel,data=dlr,facets=Type~Dir,geom='boxplot',ylab='Velocity (deg/s)',xlab='Location')+coord_flip()
+
+```
+
+Look at the relationship:
+
+```{r}
+ddp<-data.frame(dlr$Vel[dlr$Type=='E'],dlr$Vel[dlr$Type=='H'])
+names(ddp)<-c("Ev","Hv")
+ddp$Dir<-dlr$Dir[dlr$Type=='E']
+
+qplot(abs(Hv),Ev,data=ddp,facets=Dir~.,xlab='abs(Head Velocity)',ylab='Eye Velocity')+stat_smooth(method='lm')
+
+m<-lm(Ev~abs(Hv),data=ddp)
+m
+summary(m)$r.squared
+```
+
+###Compensatory Gain
+
+```{r}
+ddp$Dir<-dlr$Dir[dlr$Type=='E']
+qplot(Hv,Ev/-Hv,data=ddp,facets=.~Dir,xlab='Head Velocity',ylab='Eye Compensatory Gain')+stat_smooth(method='lm')
+
+```
+
+###All 3 at once
+
+```{r}
+dd<-data.frame(d$Vel[d$Type=='E'],d$Vel[d$Type=='H'])
+names(dd)<-c("Ev","Hv")
+dd$Dir<-d$Dir[d$Type=='E']
+qplot(abs(Hv),Ev,data=dd,facets=Dir~.,xlab='abs(Head Velocity)',ylab='Eye Velocity')+stat_smooth(method='lm')
+
+m<-lm(Ev~abs(Hv),data=ddp)
+m
+summary(m)$r.squared
+```
+
+###Compensatory Gain
+```{r}
+qplot(Hv,Ev/-Hv,data=dd,facets=.~Dir,xlab='Head Velocity',ylab='Eye Compensatory Gain')+stat_smooth(method='lm')
+
+```
+
+###Gaze Velocity
+Look directly at how fast gaze is changing during stimulation by adding the peak eye and head velocities together. During pursuit, the visual target is moving at 40 degrees/s. During leftward movements, the average velocity stays around 40 deg/s. In contrast, during rightward movements, gaze velocity slows to just slightly above zero. 
+
+During fixation, gaze moves left. 
+
+We are complicating things by comparing across all locations here. It's possible that the location that produces the highest head velocities may have different VOR gain. VOR gain during stimulation has been shown to depend on stimulus location.
+
+```{r}
+qplot(Hv,Ev+Hv,data=dd,facets=.~Dir,xlab='Head Velocity',ylab='Eye+Head (Gaze) Velocity')+stat_smooth(method='lm')
+
+```
