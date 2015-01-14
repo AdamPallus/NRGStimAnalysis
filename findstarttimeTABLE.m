@@ -1,34 +1,23 @@
 %This is a rewrite of the findstatttime function. This function returns a
 %table where each row is the latency calculated for a single trial.
 
+%output: table with Head and Eye Latency and Peak Velocity: Hs, Es, Hv, Ev
+%and direction of motion Left, Right or Static.
+
 function t=findstarttimeTABLE(head,eye)
 
 if isfield(head,'hpstim')
-    
-    %Remove trials with saccade like activity right around stim time
-    bad=any(eye.eastim(520:580,:)>4000);
-    if any(bad)
-        
-        display(['Removing ', num2str(sum(bad)),' trials'])
-        
-        eye.eastim=eye.eastim(:,~bad);
-        eye.evstim=eye.evstim(:,~bad);
-        eye.epstim=eye.epstim(:,~bad);
-        
-        head.hastim=head.hastim(:,~bad);
-        head.hvstim=head.hvstim(:,~bad);
-        head.hpstim=head.hpstim(:,~bad);
-    end
     
     rightward=head.hpstim(1800,:)>0;
     
     tright= substart(head,eye,550,100,rightward,0);
     tright.Dir=repmat('R',[height(tright),1]);
-    
+
     tleft=substart(head,eye,550,100,~rightward,0);
     tleft.Dir=repmat('L',[height(tleft),1]);
     
     t=vertcat(tleft,tright);
+    
 else
     index=head.hastim(100,:)<1e100;
     t=substart(head,eye,50,49,index,1);
@@ -93,12 +82,41 @@ for i =1:size(pse,1)
     [m, es(i)]=min(abs(o.prestimeye(1:triallength)-pse(i,:)));
     [m, hs(i)]=min(abs(o.prestimhead(1:triallength)-psh(i,:)));
 end
-    [m, meanes]=min(abs(o.prestimeye(1:triallength)-o.poststimeye(1:triallength)));
-    [m, meanhs]=min(abs(o.prestimhead(1:triallength)-o.poststimhead(1:triallength)));
+
+
+%remove failed latency calcs
+es(es<stimstart|es>stimstart+150)=NaN;
+hs(hs<stimstart|hs>stimstart+150)=NaN;
+
+for i =1:length(es)
+    if ~isnan(es(i)) && ~isnan(hs(i))
+        h=head.hvstim(hs(i):hs(i)+150,i);
+        e=eye.evstim(es(i):es(i)+150,i);
+        p=polyfit(h(:),e(:),1);
+        vor(i)=p(1);
+    else
+        vor(i)=NaN;
+    end
+end
 %subtract stimstart to get latency estimate
 hs=hs'-stimstart;
 es=es'-stimstart;
-t=table(hs,es,'VariableNames',{'EyeStart','HeadStart'});
+
+%find extreme values of velocity
+%note that this analysis only works for leftward evoked movements
+meye=max(eye.evstim(stimstart:stimstart+200,index));
+mhead=min(head.hvstim(stimstart:stimstart+200,index));
+
+% %this code makes things not stacked
+% t=table(hs,es,mhead',meye',vor','VariableNames',{'Hs','Es','Hv','Ev','VOR'});
+
+%The code below stacks the table so eye and head velocity and latency fit
+%in one column. It adds a column specifying head or eye. VOR is duplicated,
+%and the rows are in order, so you can unstack the table and regain pairs
+%if necessary.
+typeH=repmat('H',[length(hs),1]);
+typeE=repmat('E',[length(es),1]);
+t=table([hs;es],[mhead';meye'],[vor';vor'],[typeH;typeE],'VariableNames',{'Lat','Vel','VOR','Type'});
 
 
 

@@ -87,10 +87,14 @@ end
     [m, meanhs]=min(abs(o.prestimhead(1:triallength)-o.poststimhead(1:triallength)));
 
 
+%remove failed latency calculations:
+o.es(es<550|es>700)=NaN;
+o.hs(hs<550|hs>700)=NaN;
+
 o.eyestart=meanes;
-o.eyestartSTD=std(es);
+o.eyestartSTD=std(o.es);
 o.headstart=meanhs;
-o.headstartSTD=std(hs);
+o.headstartSTD=std(o.hs);
 
 %debug
 o.pse=pse;

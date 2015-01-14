@@ -35,7 +35,8 @@ dtstatic=table;
 
 %Begin looping throgh the filenames, loading each one, performing the
 %analyses and adding to the tables.
-
+    tlengthP=1951; 
+    tlengthS=300;
 for f =1:length(filenames)
     filename=filenames{f};
     b=load([filepath, filename]);
@@ -43,11 +44,9 @@ for f =1:length(filenames)
     g=b.g;
     gap=b.gap;
     
-    tlength=1951; %Only look at trials that are this long (in ms)
-    stimstart=550; %time of stimulation onset 
-    [head, eye, ~]=headeyegazeMatrix(g,s,tlength); %convert cell2matrix
+    [head, eye, ~]=headeyegazeMatrix(g,s,tlengthP); %convert cell2matrix
     %this function is the one that actually performs the analysis
-    t=findstarttimestd(head,eye);
+    t=findstarttimeTABLE(head,eye);
     %set up data row
     t.Loc=repmat(f,[height(t),1]);
     
@@ -55,10 +54,9 @@ for f =1:length(filenames)
     dtpursuit=vertcat(dtpursuit,t);
     
     %repeat above for static trials
-    tlength=300;
-    stimstart=50;
-    [head, eye]=headeyeStatic(gap,tlength);
-    t=findstarttimestd(head,eye);
+
+    [head, eye]=headeyeStatic(gap,tlengthS);
+    t=findstarttimeTABLE(head,eye);
     t.Loc=repmat(f,[height(t),1]);
     dtstatic=vertcat(dtstatic,t);
 

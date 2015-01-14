@@ -10,9 +10,6 @@ x=findstarttime(head,eye);
 o=x.left;
 rightward=head.hpstim(1800,:)>0;
 
-
-
-
 %stimulation and gap periods
 gap_start=500;
 post_stim_dur=300;
