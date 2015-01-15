@@ -194,19 +194,29 @@ summary(m)$r.squared
 ## [1] 0.8097008
 ```
 
-###Compensatory Gain
 
+###VOR Gain
 
 ```r
-m<-aggregate(d$Vel,list(Loc=d$Loc,Dir=d$Dir,Type=d$Type),mean)
-me<-subset(m,Type=='E')
-mh<-subset(m,Type=='H')
-mm<-me
-mm$E<-mm$x
-mm$H<-mh$x
+qplot(factor(Dir),VOR,geom='boxplot',data=d)
 ```
 
-###All 3 at once
+```
+## Warning: Removed 128 rows containing non-finite values (stat_boxplot).
+```
+
+![](NRGSTIM_files/figure-html/unnamed-chunk-9-1.png) 
+
+```r
+#m<-aggregate(d$Vel,list(Loc=d$Loc,Dir=d$Dir,Type=d$Type),mean)
+#me<-subset(m,Type=='E')
+#mh<-subset(m,Type=='H')
+#mm<-me
+#mm$E<-mm$x
+#mm$H<-mh$x
+```
+
+
 
 
 ```r

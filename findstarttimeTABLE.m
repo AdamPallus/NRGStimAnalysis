@@ -88,6 +88,7 @@ end
 es(es<stimstart|es>stimstart+150)=NaN;
 hs(hs<stimstart|hs>stimstart+150)=NaN;
 
+%calculate vor gain using regression slope
 for i =1:length(es)
     if ~isnan(es(i)) && ~isnan(hs(i))
         h=head.hvstim(hs(i):hs(i)+150,i);
