@@ -3,7 +3,8 @@
 In this report, we look at the effect of stimulating the rostral portion of NRG during pursuit. We identified 11 regions that produce leftward, horizontal head rotation upon stimulation when the head is stationary, and assess the impact of stimulating this region during pursuit. 
 
 ###Data Processing
-First, we uncompress the bz2 file and load the data from the csv file.
+Load the .csv file that was generated using the matlab function NRGAllTABLE
+
 
 ```r
 filename<-"~/MATLAB/NRGStimAnalysis/LatencyAndVelocityAllStacked.csv"
@@ -97,10 +98,16 @@ summary(m)$r.squared
 
 There is a strong linear correlation (r-squared = 0.9896) between head velocity and eye velocity. The eye movements are usually slightly slower than the head movements, but note that the slope is slightly positive (1.078). This suggests that at higher peak head velocities, the eye velocity could exceed head velocity, but we have fewer data points at that level.
 ###VOR Gain
-We can plot the compensatory gain (eye velocity divided by negative head velocity):
+We calculte the VOR gain using the method from Quessy and Freedman (2004). We compute the linear regression between head and eye velocity for the 150ms period beginning with the detected head movement.
+
 
 ```r
-qplot(Hv,Ev/-Hv,data=ddfix,xlab='Head Velocity',ylab='Compensatory Gain')+stat_smooth(method='lm')
+meanvor<-mean(d$VOR[d$Dir=='S'],na.rm=T)
+qplot(d$VOR[d$Dir=='S'],xlab='Compensatory Gain')+geom_vline(xintercept=meanvor,col='blue')
+```
+
+```
+## stat_bin: binwidth defaulted to range/30. Use 'binwidth = x' to adjust this.
 ```
 
 ![](NRGSTIM_files/figure-html/unnamed-chunk-5-1.png) 
@@ -137,7 +144,7 @@ qplot(factor(Loc),Lat,data=dlr,facets=Type~Dir,geom='boxplot',ylab='Latency (ms)
 
 The latency looks similar to what we saw during stimulation after fixation. Again, we see more variance in the measurement of eye latency, but they are similar. There is no evidence of the eyes systematically moving sooer than the head. 
 
-Comparing stimulatio during leftward and rightward movements, the latency is slightly longer during rightward movements. This is likely due to the head moving in the opposite direction of the stimulation-induced movement, so it takes longer for the difference to be observable. 
+Comparing stimulation during leftward and rightward movements, the latency is slightly longer during rightward movements. This is likely due to the head moving in the opposite direction of the stimulation-induced movement, so it takes longer for the difference to be observable. 
 
 ###Velocity
 In all of our stimulus locations, we were able to reverse the direction of head movement. In Freedman and Quessy (2004), they found that changes in head velocity during gaze shifts were often accompanied by changes in eye velocity several times greater. If we observe changes in eye velocity that are significantly greater than the changes in head velocity, we should reject the hypothesis that the eye movement changes are due to the VOR.
@@ -191,11 +198,13 @@ summary(m)$r.squared
 
 
 ```r
-ddp$Dir<-dlr$Dir[dlr$Type=='E']
-qplot(Hv,Ev/-Hv,data=ddp,facets=.~Dir,xlab='Head Velocity',ylab='Eye Compensatory Gain')+stat_smooth(method='lm')
+m<-aggregate(d$Vel,list(Loc=d$Loc,Dir=d$Dir,Type=d$Type),mean)
+me<-subset(m,Type=='E')
+mh<-subset(m,Type=='H')
+mm<-me
+mm$E<-mm$x
+mm$H<-mh$x
 ```
-
-![](NRGSTIM_files/figure-html/unnamed-chunk-9-1.png) 
 
 ###All 3 at once
 
@@ -232,13 +241,6 @@ summary(m)$r.squared
 ## [1] 0.8097008
 ```
 
-###Compensatory Gain
-
-```r
-qplot(Hv,Ev/-Hv,data=dd,facets=.~Dir,xlab='Head Velocity',ylab='Eye Compensatory Gain')+stat_smooth(method='lm')
-```
-
-![](NRGSTIM_files/figure-html/unnamed-chunk-11-1.png) 
 
 ###Gaze Velocity
 Look directly at how fast gaze is changing during stimulation by adding the peak eye and head velocities together. During pursuit, the visual target is moving at 40 degrees/s. During leftward movements, the average velocity stays around 40 deg/s. In contrast, during rightward movements, gaze velocity slows to just slightly above zero. 
@@ -249,7 +251,7 @@ We are complicating things by comparing across all locations here. It's possible
 
 
 ```r
-qplot(Hv,Ev+Hv,data=dd,facets=.~Dir,xlab='Head Velocity',ylab='Eye+Head (Gaze) Velocity')+stat_smooth(method='lm')
+qplot(Hv,Ev+Hv,data=dd,facets=.~Dir,xlab='Head Velocity',ylab='Eye+Head (Gaze) Velocity')+stat_smooth(method='lm')+geom_hline(yintercept=40)+geom_hline(yintercept=-40)
 ```
 
-![](NRGSTIM_files/figure-html/unnamed-chunk-12-1.png) 
+![](NRGSTIM_files/figure-html/unnamed-chunk-11-1.png) 
