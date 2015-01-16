@@ -169,12 +169,14 @@ controlv+geom_boxplot()+facet_grid(.~Dir)
 
 ![](NRGSTIM_files/figure-html/unnamed-chunk-8-1.png) 
 
-There is more variability in the combination of eye and head movements used to make rightward movements during the gap in pursuit. We can subtract this from the peak velocity we observe on stimulation to obtain the change in velocity produced, or $\{delta}V$.
+There is more variability in the combination of eye and head movements used to make rightward movements during the gap in pursuit. We can subtract this from the peak velocity we observe on stimulation to obtain the change in velocity produced, or $\Delta V$.
 
 
 ```r
-deltav<-ggplot(data=p,aes(factor(Type),Vel-cVel, fill=factor(Type)),facets=.~Dir)
-deltav+geom_boxplot()+facet_grid(.~Dir)
+x<-d
+x$cVel[is.na(x$cVel)]=0
+deltavall<-ggplot(data=x,aes(factor(Type),Vel-cVel, fill=factor(Type)),facets=.~Dir)
+deltavall+geom_boxplot()+facet_grid(.~Dir)
 ```
 
 ![](NRGSTIM_files/figure-html/unnamed-chunk-9-1.png) 
