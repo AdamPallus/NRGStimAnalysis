@@ -26,6 +26,8 @@ This data frame was generated in Matlab and contains latency and peak velocity d
 ##Stimulation During Fixation
 We stimulated each location using a fixation-gap-stim paradigm, in which subjects fixated on a visual target. 50ms after the visual target was extinguished, stimulation began. 
 
+![static example](mdfigs/static1.png)
+
 First, we show the latency of the movement of the head and eyes:
 
 
@@ -97,6 +99,7 @@ summary(m)$r.squared
 ```
 
 There is a strong linear correlation (r-squared = 0.9896) between head velocity and eye velocity. The eye movements are usually slightly slower than the head movements, but note that the slope is slightly positive (1.078). This suggests that at higher peak head velocities, the eye velocity could exceed head velocity, but we have fewer data points at that level.
+
 ###VOR Gain
 We calculte the VOR gain using the method from Quessy and Freedman (2004). We compute the linear regression between head and eye velocity for the 150ms period beginning with the detected head movement.
 
@@ -104,10 +107,6 @@ We calculte the VOR gain using the method from Quessy and Freedman (2004). We co
 ```r
 meanvor<-mean(d$VOR[d$Dir=='S'],na.rm=T)
 qplot(d$VOR[d$Dir=='S'],xlab='Compensatory Gain')+geom_vline(xintercept=meanvor,col='blue')
-```
-
-```
-## stat_bin: binwidth defaulted to range/30. Use 'binwidth = x' to adjust this.
 ```
 
 ![](NRGSTIM_files/figure-html/unnamed-chunk-5-1.png) 
@@ -120,11 +119,15 @@ A major difference is that these data show a compensatory gain of the VOR around
 ##Stimulation During Head-Free Pursuit
 Now we will compare these results to stimulation during active head-unrestrained gaze pursuit. Our hypothesis is that the eye movements produced will be the resultFirst we will look for changes in eye movement before the head begins to change its movement in response to stimulation. If we observe such changes in eye movement, we must reject the hypothesis that these movements are due to the VOR.
 
+![pursuit example](mdfigs/PursuitStim.png)
+
+
 
 ```r
 dl<-subset(d,Dir=='L')
 dr<-subset(d,Dir=='R')
 dlr<-subset(d,Dir!='S')
+
 qplot(factor(Loc),Lat,data=dlr,facets=Type~Dir,geom='boxplot',ylab='Latency (ms)',xlab='Location')+coord_flip()
 ```
 
@@ -182,52 +185,26 @@ deltavall+geom_boxplot()+facet_grid(.~Dir)
 ![](NRGSTIM_files/figure-html/unnamed-chunk-9-1.png) 
 
 
-```r
-#make this data frame to compare eye and head on the same trial. The original data frame is organized so the trials are in order
-ddp<-data.frame(dlr$Vel[dlr$Type=='E'],dlr$Vel[dlr$Type=='H'])
-names(ddp)<-c("Ev","Hv")
-ddp$Dir<-dlr$Dir[dlr$Type=='E']
+###VOR Gain
 
-qplot(abs(Hv),Ev,data=ddp,facets=Dir~.,xlab='abs(Head Velocity)',ylab='Eye Velocity')+stat_smooth(method='lm')
+
+```r
+qplot(VOR,data=d,facets=Dir~.,binwidth=0.01)+coord_cartesian(xlim=c(-1.1,-0.6))
+```
+
+```
+## Warning: position_stack requires constant width: output may be incorrect
+```
+
+```
+## Warning: position_stack requires constant width: output may be incorrect
+```
+
+```
+## Warning: position_stack requires constant width: output may be incorrect
 ```
 
 ![](NRGSTIM_files/figure-html/unnamed-chunk-10-1.png) 
-
-```r
-m<-lm(Ev~abs(Hv),data=ddp)
-m
-```
-
-```
-## 
-## Call:
-## lm(formula = Ev ~ abs(Hv), data = ddp)
-## 
-## Coefficients:
-## (Intercept)      abs(Hv)  
-##     16.0094       0.8205
-```
-
-```r
-summary(m)$r.squared
-```
-
-```
-## [1] 0.8097008
-```
-
-
-###VOR Gain
-
-```r
-qplot(factor(Dir),VOR,geom='boxplot',data=d)
-```
-
-```
-## Warning: Removed 128 rows containing non-finite values (stat_boxplot).
-```
-
-![](NRGSTIM_files/figure-html/unnamed-chunk-11-1.png) 
 
 ```r
 #m<-aggregate(d$Vel,list(Loc=d$Loc,Dir=d$Dir,Type=d$Type),mean)
@@ -239,51 +216,44 @@ qplot(factor(Dir),VOR,geom='boxplot',data=d)
 ```
 
 
-
+###Gaze Velocity
+Look directly at how fast gaze is changing during stimulation by adding the peak eye and head velocities together. During pursuit, the visual target is moving at 40 degrees/s. During leftward movements, the average velocity stays around 40 deg/s. In contrast, during rightward movements, gaze velocity slows to just slightly above zero. 
 
 ```r
+#Unstack the table to compare head/eye from same trial
 dd<-data.frame(d$Vel[d$Type=='E'],d$Vel[d$Type=='H'])
 names(dd)<-c("Ev","Hv")
 dd$Dir<-d$Dir[d$Type=='E']
-qplot(abs(Hv),Ev,data=dd,facets=Dir~.,xlab='abs(Head Velocity)',ylab='Eye Velocity')+stat_smooth(method='lm')
+dd$CEVel<-d$cVel[d$Type=='E']
+dd$CHVel<-d$cVel[d$Type=='H']
+dd$Loc<-d$Loc[d$Type=='E']
+dd$CEVel[dd$Dir=='S']=0
+dd$CHVel[dd$Dir=='S']<-0
+
+qplot(factor(Loc),Ev+Hv,facets='.~Dir',data=dd)+geom_hline(yintercept=40)+geom_hline(yintercept=-40)+geom_boxplot()
+```
+
+![](NRGSTIM_files/figure-html/unnamed-chunk-11-1.png) 
+
+It looks like during leftward movements, gaze stays very close to 40 deg/s, which is the speed of the target. During rightward movements, gaze velocity is reduced. 
+
+We can subtract the gaze velocity from control trials to look at the stimulation-induced change in gaze velocity:
+
+
+
+
+```r
+qplot(factor(Loc),Ev+Hv-(CEVel+CHVel),facets='.~Dir',data=dd,ylab='Change in Gaze Velocity')+geom_hline(yintercept=40)+geom_hline(yintercept=-40)+geom_boxplot()+coord_cartesian(ylim=c(-50,50))
 ```
 
 ![](NRGSTIM_files/figure-html/unnamed-chunk-12-1.png) 
 
 ```r
-m<-lm(Ev~abs(Hv),data=ddp)
-m
+qplot(factor(Dir),Ev+Hv-(CEVel+CHVel),data=dd,ylab='Change in Gaze Velocity')+geom_hline(yintercept=40)+geom_hline(yintercept=-40)+geom_boxplot()+coord_cartesian(ylim=c(-50,50))
 ```
 
-```
-## 
-## Call:
-## lm(formula = Ev ~ abs(Hv), data = ddp)
-## 
-## Coefficients:
-## (Intercept)      abs(Hv)  
-##     16.0094       0.8205
-```
+![](NRGSTIM_files/figure-html/unnamed-chunk-12-2.png) 
 
-```r
-summary(m)$r.squared
-```
+From this, it does appear that stimulation has a greater effect on gaze velocity during rightward pursuit. Under these circumstances, we are moving the head in the opposite direction of pursuit. How is that different? Below is a picture of gaze position during pursuit and stimulation:
 
-```
-## [1] 0.8097008
-```
-
-
-###Gaze Velocity
-Look directly at how fast gaze is changing during stimulation by adding the peak eye and head velocities together. During pursuit, the visual target is moving at 40 degrees/s. During leftward movements, the average velocity stays around 40 deg/s. In contrast, during rightward movements, gaze velocity slows to just slightly above zero. 
-
-During fixation, gaze moves left. 
-
-We are complicating things by comparing across all locations here. It's possible that the location that produces the highest head velocities may have different VOR gain. VOR gain during stimulation has been shown to depend on stimulus location.
-
-
-```r
-qplot(Hv,Ev+Hv,data=dd,facets=.~Dir,xlab='Head Velocity',ylab='Eye+Head (Gaze) Velocity')+stat_smooth(method='lm')+geom_hline(yintercept=40)+geom_hline(yintercept=-40)
-```
-
-![](NRGSTIM_files/figure-html/unnamed-chunk-13-1.png) 
+![gaze position](mdfigs/gazeposition.png)
