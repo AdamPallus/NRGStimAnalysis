@@ -13,13 +13,13 @@ head(d)
 ```
 
 ```
-##   Lat       Vel        VOR Type Dir Loc
-## 1  18 -246.3858 -0.8715360    H   L   1
-## 2  19 -172.3262 -1.0097302    H   L   1
-## 3  15 -169.7431 -0.7976775    H   L   1
-## 4  19 -171.6614 -0.9326004    H   L   1
-## 5  21 -156.4680 -0.8863773    H   L   1
-## 6  13 -191.7267 -0.9535981    H   L   1
+##   Lat       Vel        VOR Type Dir Loc     cVel
+## 1  18 -246.3858 -0.8715360    H   L   1 -47.6094
+## 2  19 -172.3262 -1.0097302    H   L   1 -47.6094
+## 3  15 -169.7431 -0.7976775    H   L   1 -47.6094
+## 4  19 -171.6614 -0.9326004    H   L   1 -47.6094
+## 5  21 -156.4680 -0.8863773    H   L   1 -47.6094
+## 6  13 -191.7267 -0.9535981    H   L   1 -47.6094
 ```
 This data frame was generated in Matlab and contains latency and peak velocity data from 1026 stimulation trials at 11 locations. 
 
@@ -158,10 +158,30 @@ qplot(factor(Loc),Vel,data=dlr,facets=Type~Dir,geom='boxplot',ylab='Velocity (de
 
 ![](NRGSTIM_files/figure-html/unnamed-chunk-7-1.png) 
 
-Look at the relationship:
+This seems similar to what we saw during fixation, but it is complicated by the gaze pursuit that is occuring while stimulation happens. This is the velocity of the movements at the same time during control trials (no stimulation):
 
 
 ```r
+p<-subset(d,!Dir=='S')
+controlv<-ggplot(data=p,aes(factor(Type),cVel, fill=factor(Type)),facets=.~Dir)
+controlv+geom_boxplot()+facet_grid(.~Dir)
+```
+
+![](NRGSTIM_files/figure-html/unnamed-chunk-8-1.png) 
+
+There is more variability in the combination of eye and head movements used to make rightward movements during the gap in pursuit. We can subtract this from the peak velocity we observe on stimulation to obtain the change in velocity produced, or $\{delta}V$.
+
+
+```r
+deltav<-ggplot(data=p,aes(factor(Type),Vel-cVel, fill=factor(Type)),facets=.~Dir)
+deltav+geom_boxplot()+facet_grid(.~Dir)
+```
+
+![](NRGSTIM_files/figure-html/unnamed-chunk-9-1.png) 
+
+
+```r
+#make this data frame to compare eye and head on the same trial. The original data frame is organized so the trials are in order
 ddp<-data.frame(dlr$Vel[dlr$Type=='E'],dlr$Vel[dlr$Type=='H'])
 names(ddp)<-c("Ev","Hv")
 ddp$Dir<-dlr$Dir[dlr$Type=='E']
@@ -169,7 +189,7 @@ ddp$Dir<-dlr$Dir[dlr$Type=='E']
 qplot(abs(Hv),Ev,data=ddp,facets=Dir~.,xlab='abs(Head Velocity)',ylab='Eye Velocity')+stat_smooth(method='lm')
 ```
 
-![](NRGSTIM_files/figure-html/unnamed-chunk-8-1.png) 
+![](NRGSTIM_files/figure-html/unnamed-chunk-10-1.png) 
 
 ```r
 m<-lm(Ev~abs(Hv),data=ddp)
@@ -205,7 +225,7 @@ qplot(factor(Dir),VOR,geom='boxplot',data=d)
 ## Warning: Removed 128 rows containing non-finite values (stat_boxplot).
 ```
 
-![](NRGSTIM_files/figure-html/unnamed-chunk-9-1.png) 
+![](NRGSTIM_files/figure-html/unnamed-chunk-11-1.png) 
 
 ```r
 #m<-aggregate(d$Vel,list(Loc=d$Loc,Dir=d$Dir,Type=d$Type),mean)
@@ -226,7 +246,7 @@ dd$Dir<-d$Dir[d$Type=='E']
 qplot(abs(Hv),Ev,data=dd,facets=Dir~.,xlab='abs(Head Velocity)',ylab='Eye Velocity')+stat_smooth(method='lm')
 ```
 
-![](NRGSTIM_files/figure-html/unnamed-chunk-10-1.png) 
+![](NRGSTIM_files/figure-html/unnamed-chunk-12-1.png) 
 
 ```r
 m<-lm(Ev~abs(Hv),data=ddp)
@@ -264,4 +284,4 @@ We are complicating things by comparing across all locations here. It's possible
 qplot(Hv,Ev+Hv,data=dd,facets=.~Dir,xlab='Head Velocity',ylab='Eye+Head (Gaze) Velocity')+stat_smooth(method='lm')+geom_hline(yintercept=40)+geom_hline(yintercept=-40)
 ```
 
-![](NRGSTIM_files/figure-html/unnamed-chunk-11-1.png) 
+![](NRGSTIM_files/figure-html/unnamed-chunk-13-1.png) 

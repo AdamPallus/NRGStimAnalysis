@@ -10,7 +10,7 @@ In this report, we look at the effect of stimulating the rostral portion of NRG 
 ###Data Processing
 Load the .csv file that was generated using the matlab function NRGAllTABLE
 
-```{r, cache=TRUE,message=FALSE}
+```{r, cache=FALSE,message=FALSE}
 filename<-"~/MATLAB/NRGStimAnalysis/LatencyAndVelocityAllStacked.csv"
 d <- read.csv(filename, na.strings="NaN")
 head(d)
@@ -95,9 +95,24 @@ qplot(factor(Loc),Vel,data=dlr,facets=Type~Dir,geom='boxplot',ylab='Velocity (de
 
 ```
 
-Look at the relationship:
+This seems similar to what we saw during fixation, but it is complicated by the gaze pursuit that is occuring while stimulation happens. This is the velocity of the movements at the same time during control trials (no stimulation):
 
 ```{r}
+p<-subset(d,!Dir=='S')
+controlv<-ggplot(data=p,aes(factor(Type),cVel, fill=factor(Type)),facets=.~Dir)
+controlv+geom_boxplot()+facet_grid(.~Dir)
+
+```
+
+There is more variability in the combination of eye and head movements used to make rightward movements during the gap in pursuit. We can subtract this from the peak velocity we observe on stimulation to obtain the change in velocity produced, or $\{delta}V$.
+
+```{r}
+deltav<-ggplot(data=p,aes(factor(Type),Vel-cVel, fill=factor(Type)),facets=.~Dir)
+deltav+geom_boxplot()+facet_grid(.~Dir)
+```
+
+```{r}
+#make this data frame to compare eye and head on the same trial. The original data frame is organized so the trials are in order
 ddp<-data.frame(dlr$Vel[dlr$Type=='E'],dlr$Vel[dlr$Type=='H'])
 names(ddp)<-c("Ev","Hv")
 ddp$Dir<-dlr$Dir[dlr$Type=='E']
