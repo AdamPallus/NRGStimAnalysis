@@ -13,7 +13,7 @@
 %and rightward movements, while dtstatic contains only one column for head
 %and eye since no movement is occuring during stimulation.
 
-function [d c]= NRGAllTABLE
+function [d control]= NRGAllTABLE
 
 [filenames, filepath]=uigetfile({'data\*.mat'},'Select Files to Analyze',...
     'multiselect','on');
@@ -45,7 +45,7 @@ for f =1:length(filenames)
     g=b.g;
     gap=b.gap;
     
-    [head, eye, gaze]=headeyegazeMatrix(g,s,tlengthP); %convert cell2matrix
+    [head, eye, ~]=headeyegazeMatrix(g,s,tlengthP); %convert cell2matrix
     %this function is the one that actually performs the analysis
     t=findstarttimeTABLE(head,eye);
     
@@ -71,9 +71,4 @@ for f =1:length(filenames)
     
 end
 d=vertcat(dtpursuit,dtstatic);
-c=table(location',hcontrolR',econtrolR',hcontrolL',econtrolL','variablenames',{'Loc','HcR','EcR','HcL','EcL'});
-d.cVel=nan(height(d),1);
-d.cVel(d.Dir=='R'&d.Type=='H')=c.HcR(d.Loc(d.Dir=='R'&d.Type=='H'));
-d.cVel(d.Dir=='R'&d.Type=='E')=c.EcR(d.Loc(d.Dir=='R'&d.Type=='H'));
-d.cVel(d.Dir=='L'&d.Type=='H')=c.HcL(d.Loc(d.Dir=='L'&d.Type=='H'));
-d.cVel(d.Dir=='L'&d.Type=='E')=c.EcL(d.Loc(d.Dir=='L'&d.Type=='E'));
+control=table(location',hcontrol',econtrol','variablenames',{'Loc','Hc','Ec'});
