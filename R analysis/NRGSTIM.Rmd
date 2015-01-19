@@ -24,7 +24,8 @@ filename<-"~/MATLAB/NRGStimAnalysis/LatencyAndVelocityAllStacked.csv"
 d <- read.csv(filename, na.strings="NaN")
 head(d)
 ```
-This data frame was generated in Matlab and contains latency and peak velocity data from 1026 stimulation trials at 11 locations. 
+
+This data frame was generated in Matlab and contains latency and peak velocity data from 1026 stimulation trials at 11 locations. It also includes an analysis of the VOR for each trial, and the velocity of control trials for comparison. 
 
 ##Stimulation During Fixation
 We stimulated each location using a fixation-gap-stim paradigm, in which subjects fixated on a visual target. 50ms after the visual target was extinguished, stimulation began. 
