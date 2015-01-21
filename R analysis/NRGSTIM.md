@@ -50,14 +50,7 @@ head(d)
 ## 6  13 -191.7267 -0.9535981    H   L   1 -37.04121
 ```
 
-This data frame was generated in Matlab and containsdd<-data.frame(d$Vel[d$Type=='E'],d$Vel[d$Type=='H'])
-names(dd)<-c("Ev","Hv")
-dd$Dir<-d$Dir[d$Type=='E']
-dd$CEVel<-d$cVel[d$Type=='E']
-dd$CHVel<-d$cVel[d$Type=='H']
-dd$Loc<-d$Loc[d$Type=='E']
-dd$CEVel[dd$Dir=='S']=0
-dd$CHVel[dd$Dir=='S']<-0 latency and peak velocity data from 1026 stimulation trials at 11 locations. It also includes an analysis of the VOR for each trial, and the velocity of control trials for comparison. 
+This data frame was generated in Matlab and contains latency and peak velocity data from 1026 stimulation trials at 11 locations. It also includes an analysis of the VOR for each trial, and the velocity of control trials for comparison. 
 
 ##Stimulation During Fixation
 We stimulated each location using a fixation-gap-stim paradigm, in which subjects fixated on a visual target. 50ms after the visual target was extinguished, stimulation began. 
