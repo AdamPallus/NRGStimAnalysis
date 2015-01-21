@@ -57,10 +57,10 @@ for f =1:length(filenames)
     
     %control trials
     rightward=gaze.gpgap(1000,:)>0;
-    hcontrolR(f)=mean(head.hvgap(600,rightward));
-    econtrolR(f)=mean(eye.evgap(600,rightward));
-    hcontrolL(f)=mean(head.hvgap(600,~rightward));
-    econtrolL(f)=mean(eye.evgap(600,~rightward));
+    hcontrolR(f)=mean(head.hvgap(650,rightward));
+    econtrolR(f)=mean(eye.evgap(650,rightward));
+    hcontrolL(f)=mean(head.hvgap(650,~rightward));
+    econtrolL(f)=mean(eye.evgap(650,~rightward));
     location(f)=f;
     
     %repeat above for static trials

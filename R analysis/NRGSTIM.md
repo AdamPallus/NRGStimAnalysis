@@ -41,16 +41,23 @@ head(d)
 ```
 
 ```
-##   Lat       Vel        VOR Type Dir Loc     cVel
-## 1  18 -246.3858 -0.8715360    H   L   1 -47.6094
-## 2  19 -172.3262 -1.0097302    H   L   1 -47.6094
-## 3  15 -169.7431 -0.7976775    H   L   1 -47.6094
-## 4  19 -171.6614 -0.9326004    H   L   1 -47.6094
-## 5  21 -156.4680 -0.8863773    H   L   1 -47.6094
-## 6  13 -191.7267 -0.9535981    H   L   1 -47.6094
+##   Lat       Vel        VOR Type Dir Loc      cVel
+## 1  18 -246.3858 -0.8715360    H   L   1 -37.04121
+## 2  19 -172.3262 -1.0097302    H   L   1 -37.04121
+## 3  15 -169.7431 -0.7976775    H   L   1 -37.04121
+## 4  19 -171.6614 -0.9326004    H   L   1 -37.04121
+## 5  21 -156.4680 -0.8863773    H   L   1 -37.04121
+## 6  13 -191.7267 -0.9535981    H   L   1 -37.04121
 ```
 
-This data frame was generated in Matlab and contains latency and peak velocity data from 1026 stimulation trials at 11 locations. It also includes an analysis of the VOR for each trial, and the velocity of control trials for comparison. 
+This data frame was generated in Matlab and containsdd<-data.frame(d$Vel[d$Type=='E'],d$Vel[d$Type=='H'])
+names(dd)<-c("Ev","Hv")
+dd$Dir<-d$Dir[d$Type=='E']
+dd$CEVel<-d$cVel[d$Type=='E']
+dd$CHVel<-d$cVel[d$Type=='H']
+dd$Loc<-d$Loc[d$Type=='E']
+dd$CEVel[dd$Dir=='S']=0
+dd$CHVel[dd$Dir=='S']<-0 latency and peak velocity data from 1026 stimulation trials at 11 locations. It also includes an analysis of the VOR for each trial, and the velocity of control trials for comparison. 
 
 ##Stimulation During Fixation
 We stimulated each location using a fixation-gap-stim paradigm, in which subjects fixated on a visual target. 50ms after the visual target was extinguished, stimulation began. 
@@ -183,6 +190,7 @@ deltavall+geom_boxplot()+facet_grid(.~Dir)+ylab('Stimulation-Induced Change in V
 
 ![](NRGSTIM_files/figure-html/change_in_velocity_during_pursuit-1.png) 
 
+Next, we can recreate the 
 
 ###VOR Gain
 
